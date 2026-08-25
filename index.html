@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameDrop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+ <header>
+    <div class="logo">GameDrop</div>
+    
+    <!-- SHU YERGA USER ID QISMINI QO'SHASIZ -->
+    <div class="user-block">
+      <div class="user-id-box" style="background: #0f172a; padding: 6px 12px; border-radius: 20px; border: 1px solid #334155; font-size: 0.85rem; color: #94a3b8;">
+        ID: <span id="userIdDisplay" style="color: #38bdf8; font-weight: 700;">---</span>
+      </div>
+      <!-- ID qismi tugadi -->
+
+      <div class="balance">
+        <div class="coin-3d">G</div>
+        <span id="userBalance">0</span>
+      </div>
+      <button class="btn btn-add" onclick="addCoins()">+ Tangalar</button>
+      <button class="btn btn-inv" onclick="openInventory()">Inventar (<span id="invCount">0</span>)</button>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="section-title">O'yin Keyslari</h1>
+    <div class="cases-grid" id="casesGrid"></div>
+  </main>
+
+  <!-- RULOTKA MODAL -->
+  <div class="modal" id="rouletteModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('rouletteModal')">&times;</span>
+      <div class="modal-header">
+        <h2 id="modalTitle">Keys nomi</h2>
+      </div>
+      
+      <div class="roulette-wrapper">
+        <div class="track" id="track"></div>
+      </div>
+
+      <div class="roulette-controls">
+        <button class="btn spin-btn" id="spinBtn" onclick="spin()">Aylantirish</button>
+        <div class="win-message" id="win-message"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVENTAR MODAL -->
+  <div class="modal" id="inventoryModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('inventoryModal')">&times;</span>
+      <h2>Mening Yutuqlarim (Inventar)</h2>
+      <div class="inventory-list" id="inventoryList">
+        <p style="color: #94a3b8; width: 100%;">Inventaringiz bo'sh.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP-UP MODAL -->
+  <div class="modal" id="topupModal">
+    <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+      <span class="close-btn" onclick="closeModal('topupModal')">&times;</span>
+      <h2>G Tangalarni Sotib Olish</h2>
+      <p style="color: #94a3b8; margin-bottom: 15px;">Ketma-ketlikdagi tariflar va bonuslar</p>
+      
+      <div class="packages-grid">
+        <div class="pkg-card" onclick="buyPkg(110, 14000)"><b>100 + 10 G</b><span>14,000 so'm</span></div>
+      <div class="pkg-card" onclick="buyPkg(220, 28000)"><b>200 + 20 G</b><span>28,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(330, 42000)"><b>300 + 30 G</b><span>42,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(440, 56000)"><b>400 + 40 G</b><span>56,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(550, 70000)"><b>500 + 50 G</b><span>70,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(660, 84000)"><b>600 + 60 G</b><span>84,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(770, 98000)"><b>700 + 70 G</b><span>98,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(880, 112000)"><b>800 + 80 G</b><span>112,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(990, 126000)"><b>900 + 90 G</b><span>126,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(1100, 140000)"><b>1000 + 100 G</b><span>140,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(1210, 154000)"><b>1100 + 110 G</b><span>154,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(1320, 168000)"><b>1200 + 120 G</b><span>168,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(1430, 182000)"><b>1300 + 130 G</b><span>182,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(1540, 196000)"><b>1400 + 140 G</b><span>196,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(1650, 210000)"><b>1500 + 150 G</b><span>210,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(2200,280000 )"><b>2000 + 200 G</b><span>280,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(3300, 420000)"><b>3000 + 300 G</b><span>420,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(4400, 560000)"><b>4000 + 400 G</b><span>560,000 so'm</span></div>
+        <div class="pkg-card" onclick="buyPkg(5500, 700000)"><b>5000 + 500 G</b><span>700,000 so'm</span></div>
+         <div class="pkg-card" onclick="buyPkg(11000, 1400000)"><b>10000 + 1000 G</b><span>1,400,000 so'm</span></div>
+      </div>
+    </div>
+  </div>
+<!-- ADMIN PANEL MODAL (Eng oxiriga qo'yiladi) -->
+  <div class="modal" id="adminModal">
+    <div class="modal-content" style="max-width: 400px;">
+      <span class="close-btn" onclick="closeModal('adminModal')">&times;</span>
+      <h2 style="color: #38bdf8; margin-bottom: 15px;">Admin: Tanga Qo'shish</h2>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">Foydalanuvchi ID si va tanga miqdorini kiriting:</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <input type="text" id="adminTargetId" placeholder="Foydalanuvchi ID si (masalan: GD-8492)" style="padding: 10px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; color: #fff;">
+        <input type="number" id="adminCoinsInput" placeholder="Qo'shiladigan G miqdori (masalan: 100)" style="padding: 10px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; color: #fff;">
+        <button class="btn" onclick="adminAddCoins()" style="background: #10b981; color: #fff; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer;">Balansga qo'shish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin panelni ochish uchun kichik tugma (sahifaning eng pastki markaziga) -->
+  <div style="text-align: center; margin-top: 20px;">
+    <button onclick="openAdminPanel()" style="background: transparent; border: none; color: #475569; cursor: pointer; font-size: 0.8rem;">Admin Panel</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
