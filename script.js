@@ -1,22 +1,10 @@
-// --- DATABASE VA LOCALSTORAGE BILAN ISHLASH ---
-let userBalance = localStorage.getItem('userBalance') ? parseInt(localStorage.getItem('userBalance')) : 0;
-let inventory = localStorage.getItem('inventory') ? JSON.parse(localStorage.getItem('inventory')) : [];
-
-let userId = localStorage.getItem('userId');
-if (!userId) {
-    userId = "ID-" + Math.floor(100000 + Math.random() * 900000);
-    localStorage.setItem('userId', userId);
-}
+// LocalStorage ma'lumotlari
+let userBalance = parseInt(localStorage.getItem('userBalance')) || 0;
+let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+let userId = localStorage.getItem('userId') || "ID-" + Math.floor(100000 + Math.random() * 900000);
+localStorage.setItem('userId', userId);
 
 const MY_TELEGRAM = "Hack_Games_0712"; 
-
-window.onload = function() {
-    const idDisplay = document.getElementById('userIdDisplay');
-    if (idDisplay) idDisplay.innerText = userId;
-    updateBalanceDisplay();
-    updateInventoryDisplay();
-    renderCases();
-};
 
 let casesData = [
     { id: 1, title: "PUBG Bronze", price: 79, img: "pubg-bronze.jpg", items: ["10 UC", "30 UC", "60 UC", "15 UC", "5 UC", "25 UC"] },
@@ -25,6 +13,34 @@ let casesData = [
     { id: 4, title: "Free Fire Mini", price: 79, img: "ff-mini.jpg", items: ["20 Diamond", "50 Diamond", "100 Diamond"] },
     { id: 5, title: "Free Fire Max", price: 499, img: "ff-max.jpg", items: ["100 Diamond", "310 Diamond", "520 Diamond", "Booyah Pass"] }
 ];
+
+window.onload = function() {
+    initUI();
+};
+
+function initUI() {
+    // ID chiqarish
+    const idDisplay = document.getElementById('userIdDisplay');
+    if (idDisplay) idDisplay.innerText = userId;
+
+    updateBalanceDisplay();
+    updateInventoryDisplay();
+    renderCases();
+
+    // + Tangalar tugmasi avtomatik ulanishi
+    const addCoinsBtn = document.getElementById('addCoinsBtn');
+    if (addCoinsBtn) {
+        addCoinsBtn.onclick = function() {
+            buyCoinsTelegram(100, "10,000");
+        };
+    }
+
+    // Admin panel tugmasi avtomatik ulanishi
+    const adminPanelBtn = document.getElementById('adminPanelBtn');
+    if (adminPanelBtn) {
+        adminPanelBtn.onclick = openAdminPanel;
+    }
+}
 
 function renderCases() {
     const grid = document.getElementById('casesGrid');
@@ -37,7 +53,7 @@ function renderCases() {
         card.innerHTML = `
             <img src="${c.img}" alt="${c.title}" style="width:100%; border-radius:8px;">
             <h3>${c.title}</h3>
-            <p>Narxi: ${c.price} tanga</p>
+            <p>Narxi: <b>${c.price}</b> tanga</p>
             <button onclick="openRoulette(${c.id})" style="padding:8px 16px; background:#22c55e; color:white; border:none; border-radius:6px; cursor:pointer;">Ochish</button>
         `;
         grid.appendChild(card);
@@ -105,13 +121,11 @@ function closeRoulette() {
     if (modal) modal.style.display = 'none';
 }
 
-// --- TANGA SOTIB OLISH (TELEGRAMGA O'TISH) ---
 function buyCoinsTelegram(coins, price) {
     let text = `Salom! Men tanga sotib olmoqchiman.%0A- ID: ${userId}%0A- Miqdor: ${coins} ta tanga%0A- Narxi: ${price} so'm`;
     window.open(`https://t.me/${MY_TELEGRAM}?text=${text}`, '_blank');
 }
 
-// --- INVENTAR ---
 function updateInventoryDisplay() {
     const invContainer = document.getElementById('inventoryList');
     const invCount = document.getElementById('inventoryCount');
@@ -120,6 +134,10 @@ function updateInventoryDisplay() {
 
     if (invContainer) {
         invContainer.innerHTML = '';
+        if (inventory.length === 0) {
+            invContainer.innerHTML = '<p style="color: #94a3b8; text-align: center;">Inventaringiz bo\'sh</p>';
+            return;
+        }
         inventory.forEach((inv, index) => {
             const div = document.createElement('div');
             div.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 10px; margin-bottom: 5px; border-radius: 6px; color: white;";
@@ -135,18 +153,16 @@ function updateInventoryDisplay() {
 function claimPrize(index) {
     let invItem = inventory[index];
     let text = `Assalomu alaykum! Men yutug'imni olmoqchiman:%0A- ID: ${userId}%0A- Keys: ${invItem.caseTitle}%0A- Yutuq: ${invItem.prize}`;
-    
     window.open(`https://t.me/${MY_TELEGRAM}?text=${text}`, '_blank');
 
     inventory.splice(index, 1);
     updateInventoryDisplay();
 }
 
-// --- ADMIN PANEL (Parol: admin0712) ---
 function openAdminPanel() {
-    const password = prompt("Admin parolini kiriting:");
+    let password = prompt("Admin parolini kiriting:");
     if (password === "admin0712") {
-        let targetId = prompt(`Sizning ID: ${userId}\nCoin qo'shmoqchi bo'lgan ID'ni kiriting:`);
+        let targetId = prompt(`Foydalanuvchi ID raqamini kiriting (Masalan: ${userId}):`);
         if (targetId) {
             let addAmount = prompt("Qancha coin qo'shmoqchisiz?");
             if (addAmount && !isNaN(addAmount)) {
@@ -158,17 +174,4 @@ function openAdminPanel() {
     } else if (password !== null) {
         alert("Parol noto'g'ri!");
     }
-}
-
-// Tugmalarni to'g'ri ulash
-const addCoinsBtn = document.getElementById('addCoinsBtn');
-if (addCoinsBtn) {
-    addCoinsBtn.onclick = function() {
-        buyCoinsTelegram(100, "10,000");
-    };
-}
-
-const adminPanelBtn = document.getElementById('adminPanelBtn');
-if (adminPanelBtn) {
-    adminPanelBtn.onclick = openAdminPanel;
 }
