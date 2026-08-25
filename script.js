@@ -1,4 +1,4 @@
-// LocalStorage orqali ma'lumotlarni saqlash
+// --- DATABASE VA LOCALSTORAGE BILAN ISHLASH ---
 let userBalance = localStorage.getItem('userBalance') ? parseInt(localStorage.getItem('userBalance')) : 0;
 let inventory = localStorage.getItem('inventory') ? JSON.parse(localStorage.getItem('inventory')) : [];
 
@@ -51,7 +51,7 @@ function updateBalanceDisplay() {
 }
 
 function openRoulette(caseId) {
-    selectedCase = casesData.find(c => c.id === caseId);
+    let selectedCase = casesData.find(c => c.id === caseId);
     if (!selectedCase) return;
 
     if (userBalance < selectedCase.price) {
@@ -86,7 +86,7 @@ function openRoulette(caseId) {
         track.style.transform = 'translateX(0px)';
 
         setTimeout(() => {
-            track.style.transition = 'transform 4s cubic-bezier(0.15, 0.75, 0.25, 1);';
+            track.style.transition = 'transform 4s cubic-bezier(0.15, 0.75, 0.25, 1)';
             let randomOffset = Math.floor(Math.random() * 1500) + 1500;
             track.style.transform = `translateX(-${randomOffset}px)`;
 
@@ -146,7 +146,7 @@ function claimPrize(index) {
 function openAdminPanel() {
     const password = prompt("Admin parolini kiriting:");
     if (password === "admin0712") {
-        let targetId = prompt(`Foydalanuvchi ID raqamini kiriting (Masalan: ${userId}):`);
+        let targetId = prompt(`Sizning ID: ${userId}\nCoin qo'shmoqchi bo'lgan ID'ni kiriting:`);
         if (targetId) {
             let addAmount = prompt("Qancha coin qo'shmoqchisiz?");
             if (addAmount && !isNaN(addAmount)) {
