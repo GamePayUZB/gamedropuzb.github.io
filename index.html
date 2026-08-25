@@ -11,19 +11,16 @@
  <header>
     <div class="logo">GameDrop</div>
     
-    <!-- SHU YERGA USER ID QISMINI QO'SHASIZ -->
+    <!-- Mana shu qismni yangi kodga almashtirasiz -->
     <div class="user-block">
-      <div class="user-id-box" style="background: #0f172a; padding: 6px 12px; border-radius: 20px; border: 1px solid #334155; font-size: 0.85rem; color: #94a3b8;">
-        ID: <span id="userIdDisplay" style="color: #38bdf8; font-weight: 700;">---</span>
-      </div>
-      <!-- ID qismi tugadi -->
-
       <div class="balance">
         <div class="coin-3d">G</div>
         <span id="userBalance">0</span>
       </div>
+      <span class="user-id-badge" style="background: #334155; padding: 5px 10px; border-radius: 8px; font-size: 0.85rem; color: #38bdf8;">ID: <span id="displayUserId">...</span></span>
       <button class="btn btn-add" onclick="addCoins()">+ Tangalar</button>
       <button class="btn btn-inv" onclick="openInventory()">Inventar (<span id="invCount">0</span>)</button>
+      <button class="btn btn-admin" onclick="openAdminLogin()" style="background: #dc2626; color: #fff;">🔑 Admin</button>
     </div>
   </header>
 
@@ -93,26 +90,34 @@
       </div>
     </div>
   </div>
-<!-- ADMIN PANEL MODAL (Eng oxiriga qo'yiladi) -->
-  <div class="modal" id="adminModal">
-    <div class="modal-content" style="max-width: 400px;">
-      <span class="close-btn" onclick="closeModal('adminModal')">&times;</span>
-      <h2 style="color: #38bdf8; margin-bottom: 15px;">Admin: Tanga Qo'shish</h2>
-      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">Foydalanuvchi ID si va tanga miqdorini kiriting:</p>
-      
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <input type="text" id="adminTargetId" placeholder="Foydalanuvchi ID si (masalan: GD-8492)" style="padding: 10px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; color: #fff;">
-        <input type="number" id="adminCoinsInput" placeholder="Qo'shiladigan G miqdori (masalan: 100)" style="padding: 10px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; color: #fff;">
-        <button class="btn" onclick="adminAddCoins()" style="background: #10b981; color: #fff; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer;">Balansga qo'shish</button>
+  <!-- ADMIN LOGIN / PANEL MODAL -->
+<div class="modal" id="adminModal">
+  <div class="modal-content admin-modal-content">
+    <span class="close-btn" onclick="closeModal('adminModal')">&times;</span>
+    <h2>Admin Panel</h2>
+    
+    <div id="adminLoginForm">
+      <p style="color: #94a3b8; margin-bottom: 15px;">Kirish uchun parolni kiriting</p>
+      <input type="password" id="adminPasswordInput" placeholder="Parol..." style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; margin-bottom: 15px;">
+      <button class="btn" onclick="checkAdminPassword()" style="background: #10b981; color: #fff; width: 100%;">Kirish</button>
+    </div>
+
+    <div id="adminDashboard" style="display: none;">
+      <div class="admin-section" style="margin-bottom: 20px;">
+        <h3>Foydalanuvchiga Tanga Qo'shish</h3>
+        <input type="text" id="targetUserId" placeholder="Foydalanuvchi ID si" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 6px; margin: 8px 0;">
+        <input type="number" id="addCoinAmount" placeholder="Tanga miqdori" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 6px; margin-bottom: 8px;">
+        <button class="btn" onclick="adminAddCoins()" style="background: #38bdf8; color: #fff; width: 100%;">Tanga Berish</button>
+      </div>
+      <hr style="border-color: #334155; margin: 15px 0;">
+      <div class="admin-section">
+        <h3>Statistika</h3>
+        <p>Jami foydalanuvchi ID: <span id="adminStatId" style="color: #fbbf24;"></span></p>
+        <p>Balansi: <span id="adminStatBalance" style="color: #10b981;"></span> G</p>
       </div>
     </div>
   </div>
-
-  <!-- Admin panelni ochish uchun kichik tugma (sahifaning eng pastki markaziga) -->
-  <div style="text-align: center; margin-top: 20px;">
-    <button onclick="openAdminPanel()" style="background: transparent; border: none; color: #475569; cursor: pointer; font-size: 0.8rem;">Admin Panel</button>
-  </div>
-
+</div>
   <script src="script.js"></script>
 </body>
 </html>
