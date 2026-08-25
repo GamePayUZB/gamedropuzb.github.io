@@ -1,0 +1,10 @@
+{
+  "users": [],
+  "cases": [
+    { "id": 1, "title": "PUBG Bronze", "price": 79 },
+    { "id": 2, "title": "PUBG Silver", "price": 149 },
+    { "id": 3, "title": "PUBG Gold", "price": 649 },
+    { "id": 4, "title": "Free Fire Mini", "price": 79 },
+    { "id": 5, "title": "Free Fire Max", "price": 499 }
+  ]
+}
