@@ -14,11 +14,11 @@ let inventory = [];
 let selectedCase = null;
 
 const casesData = [
-  { id: 1, title: "PUBG Bronze", price: 50, img: "images/pubg-bronze.jpg", items: ["10 UC", "30 UC", "60 UC", "15 UC", "5 UC", "25 UC"] },
-  { id: 2, title: "PUBG Silver", price: 125, img: "images/pubg-silver.jpg", items: ["60 UC", "120 UC", "180 UC", "15 UC"] },
-  { id: 3, title: "PUBG Gold", price: 500, img: "images/pubg-gold.jpg", items: ["325 UC", "660 UC", "1800 UC", "12 oy prime plus"] },
-  { id: 4, title: "Free Fire Mini", price: 75, img: "images/ff-mini.jpg", items: ["20 Diamond", "50 Diamond", "100 Diamond"] },
-  { id: 5, title: "Free Fire Max", price: 400, img: "images/ff-max.jpg", items: ["100 Diamond", "310 Diamond", "520 Diamond", "Booyah Pass"] }
+  { id: 1, title: "PUBG Bronze", price: 79, img: "pubg-bronze.jpg", items: ["10 UC", "30 UC", "60 UC", "15 UC", "5 UC", "25 UC"] },
+  { id: 2, title: "PUBG Silver", price: 149, img: "pubg-silver.jpg", items: ["60 UC", "120 UC", "180 UC", "15 UC"] },
+  { id: 3, title: "PUBG Gold", price: 649, img: "pubg-gold.jpg", items: ["325 UC", "660 UC", "1800 UC", "12 oy prime plus"] },
+  { id: 4, title: "Free Fire Mini", price: 79, img: "ff-mini.jpg", items: ["20 Diamond", "50 Diamond", "100 Diamond"] },
+  { id: 5, title: "Free Fire Max", price: 499, img: "ff-max.jpg", items: ["100 Diamond", "310 Diamond", "520 Diamond", "Booyah Pass"] }
 ];
 
 const grid = document.getElementById('casesGrid');
