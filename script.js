@@ -1,15 +1,20 @@
-let userBalance = 0;
-let inventory = [];
-let selectedCase = null;
-let userId = "ID-" + Math.floor(100000 + Math.random() * 900000);
+// LocalStorage orqali ma'lumotlarni saqlash
+let userBalance = localStorage.getItem('userBalance') ? parseInt(localStorage.getItem('userBalance')) : 0;
+let inventory = localStorage.getItem('inventory') ? JSON.parse(localStorage.getItem('inventory')) : [];
 
-// Telegram useringiz shu yerga yozildi:
+let userId = localStorage.getItem('userId');
+if (!userId) {
+    userId = "ID-" + Math.floor(100000 + Math.random() * 900000);
+    localStorage.setItem('userId', userId);
+}
+
 const MY_TELEGRAM = "Hack_Games_0712"; 
 
 window.onload = function() {
     const idDisplay = document.getElementById('userIdDisplay');
     if (idDisplay) idDisplay.innerText = userId;
     updateBalanceDisplay();
+    updateInventoryDisplay();
     renderCases();
 };
 
@@ -42,6 +47,7 @@ function renderCases() {
 function updateBalanceDisplay() {
     const balanceEl = document.getElementById('balanceDisplay');
     if (balanceEl) balanceEl.innerText = userBalance;
+    localStorage.setItem('userBalance', userBalance);
 }
 
 function openRoulette(caseId) {
@@ -49,7 +55,7 @@ function openRoulette(caseId) {
     if (!selectedCase) return;
 
     if (userBalance < selectedCase.price) {
-        alert("Balansingizda tanga yetarli emas! Tanga sotib olish uchun ustiga bosing.");
+        alert("Balansingizda tanga yetarli emas! Tanga sotib olish uchun '+ Tangalar' tugmasini bosing.");
         return;
     }
 
@@ -80,7 +86,7 @@ function openRoulette(caseId) {
         track.style.transform = 'translateX(0px)';
 
         setTimeout(() => {
-            track.style.transition = 'transform 4s cubic-bezier(0.15, 0.75, 0.25, 1)';
+            track.style.transition = 'transform 4s cubic-bezier(0.15, 0.75, 0.25, 1);';
             let randomOffset = Math.floor(Math.random() * 1500) + 1500;
             track.style.transform = `translateX(-${randomOffset}px)`;
 
@@ -99,17 +105,18 @@ function closeRoulette() {
     if (modal) modal.style.display = 'none';
 }
 
-// --- TANGA SOTIB OLISH ---
+// --- TANGA SOTIB OLISH (TELEGRAMGA O'TISH) ---
 function buyCoinsTelegram(coins, price) {
     let text = `Salom! Men tanga sotib olmoqchiman.%0A- ID: ${userId}%0A- Miqdor: ${coins} ta tanga%0A- Narxi: ${price} so'm`;
     window.open(`https://t.me/${MY_TELEGRAM}?text=${text}`, '_blank');
 }
 
-// --- INVENTAR VA YUTUQLARNI O'CHIRISH ---
+// --- INVENTAR ---
 function updateInventoryDisplay() {
     const invContainer = document.getElementById('inventoryList');
     const invCount = document.getElementById('inventoryCount');
     if (invCount) invCount.innerText = inventory.length;
+    localStorage.setItem('inventory', JSON.stringify(inventory));
 
     if (invContainer) {
         invContainer.innerHTML = '';
@@ -131,37 +138,34 @@ function claimPrize(index) {
     
     window.open(`https://t.me/${MY_TELEGRAM}?text=${text}`, '_blank');
 
-    // Yutuq olingandan keyin inventardan o'chib ketadi
     inventory.splice(index, 1);
     updateInventoryDisplay();
 }
 
-// --- ADMIN PANEL ---
+// --- ADMIN PANEL (Parol: admin0712) ---
 function openAdminPanel() {
     const password = prompt("Admin parolini kiriting:");
-    if (password === "admin123") {
-        let newCaseName = prompt("Yangi keys nomini kiriting:");
-        let newCasePrice = prompt("Yangi keys narxini kiriting:");
-        if (newCaseName && newCasePrice) {
-            casesData.push({
-                id: casesData.length + 1,
-                title: newCaseName,
-                price: Number(newCasePrice),
-                img: "pubg-bronze.jpg",
-                items: ["10 UC", "50 UC", "100 UC"]
-            });
-            renderCases();
-            alert("Yangi keys muvaffaqiyatli qo'shildi!");
+    if (password === "admin0712") {
+        let targetId = prompt(`Foydalanuvchi ID raqamini kiriting (Masalan: ${userId}):`);
+        if (targetId) {
+            let addAmount = prompt("Qancha coin qo'shmoqchisiz?");
+            if (addAmount && !isNaN(addAmount)) {
+                userBalance += Number(addAmount);
+                updateBalanceDisplay();
+                alert(`Muvaffaqiyatli! Balansga ${addAmount} ta coin qo'shildi.`);
+            }
         }
     } else if (password !== null) {
         alert("Parol noto'g'ri!");
     }
 }
 
-// Tugmalarni bog'lash
+// Tugmalarni to'g'ri ulash
 const addCoinsBtn = document.getElementById('addCoinsBtn');
 if (addCoinsBtn) {
-    addCoinsBtn.onclick = () => buyCoinsTelegram(100, "10,000"); 
+    addCoinsBtn.onclick = function() {
+        buyCoinsTelegram(100, "10,000");
+    };
 }
 
 const adminPanelBtn = document.getElementById('adminPanelBtn');
