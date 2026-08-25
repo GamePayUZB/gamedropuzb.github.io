@@ -4,8 +4,13 @@ if (!userId) {
   userId = Math.floor(100000 + Math.random() * 900000); // 6 xonali noyob ID
   localStorage.setItem('userId', userId);
 }
-// Fayl ichiga to'g'ridan-to'g'ri yozilgan keyslar (fetch talab qilinmaydi)
-let casesData = [
+
+let userBalance = parseInt(localStorage.getItem('userBalance')) || 0;
+let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+let selectedCase = null;
+
+// Keyslar ro'yxati (rasm yo'llari to'g'irlandi va siz bergan narxlar qo'yildi)
+const casesData = [
   { id: 1, title: "PUBG Bronze", price: 99, img: "pubg-bronze.jpg", items: ["10 UC", "30 UC", "60 UC", "15 UC", "5 UC", "25 UC"] },
   { id: 2, title: "PUBG Silver", price: 149, img: "pubg-silver.jpg", items: ["60 UC", "120 UC", "180 UC", "15 UC"] },
   { id: 3, title: "PUBG Gold", price: 699, img: "pubg-gold.jpg", items: ["325 UC", "660 UC", "1800 UC", "12 oy prime plus"] },
@@ -13,40 +18,31 @@ let casesData = [
   { id: 5, title: "Free Fire Max", price: 399, img: "ff-max.jpg", items: ["100 Diamond", "310 Diamond", "520 Diamond", "Booyah Pass"] }
 ];
 
-let userBalance = parseInt(localStorage.getItem('userBalance')) || 0;
-// Inventar obyektdan iborat bo'ladi: { name: "10 UC", status: "Kutilmoqda" yoki "Olingan" }
-let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-let selectedCase = null;
-let casesData = [];
-
 // Ma'lumotlarni saqlash va ekranni yangilash
 function saveData() {
   localStorage.setItem('userBalance', userBalance);
   localStorage.setItem('inventory', JSON.stringify(inventory));
   
-  document.getElementById('userBalance').innerText = userBalance;
-  document.getElementById('displayUserId').innerText = userId;
-  document.getElementById('invCount').innerText = inventory.length;
+  const balanceEl = document.getElementById('userBalance');
+  const userIdEl = document.getElementById('displayUserId');
+  const invCountEl = document.getElementById('invCount');
+
+  if (balanceEl) balanceEl.innerText = userBalance;
+  if (userIdEl) userIdEl.innerText = userId;
+  if (invCountEl) invCountEl.innerText = inventory.length;
 }
 
 const grid = document.getElementById('casesGrid');
 const track = document.getElementById('track');
 
 // Sahifa ochilganda
-window.onload = async () => {
+window.onload = () => {
   saveData();
-  try {
-    const response = await fetch('database.json');
-    const data = await response.json();
-    casesData = data.cases;
-    renderCases();
-  } catch (error) {
-    console.error("database.json yuklashda xatolik:", error);
-    grid.innerHTML = `<p style="color: #ef4444; grid-column: 1/-1; text-align: center;">Keyslarni yuklab bo'lmadi!</p>`;
-  }
+  renderCases();
 };
 
 function renderCases() {
+  if (!grid) return;
   grid.innerHTML = '';
   casesData.forEach(c => {
     const card = document.createElement('div');
@@ -54,7 +50,7 @@ function renderCases() {
     card.onclick = () => openRouletteModal(c);
     card.innerHTML = `
       <div class="case-img-box">
-        <img src="${c.img}" alt="${c.title}" class="case-img">
+        <img src="${c.img}" alt="${c.title}" class="case-img" onerror="this.src='https://via.placeholder.com/150'">
       </div>
       <div class="case-title">${c.title}</div>
       <div class="case-price">${c.price} G</div>
@@ -80,6 +76,7 @@ function closeModal(id) {
   }
 }
 
+// Rulotka elementlarini chiroyli qilib chiqarish
 function initTrack() {
   track.style.transition = 'none';
   track.style.transform = 'translateX(0)';
@@ -118,6 +115,8 @@ function spin() {
     div.className = 'item-card';
     if (i === targetIndex) {
       div.innerText = wonItem;
+      div.style.borderColor = '#fbbf24'; // Yutuq turgan joyni ajratib ko'rsatish
+      div.style.background = '#334155';
     } else {
       div.innerText = selectedCase.items[Math.floor(Math.random() * selectedCase.items.length)];
     }
@@ -135,7 +134,6 @@ function spin() {
 
     setTimeout(() => {
       document.getElementById('win-message').innerText = `Siz yutdingiz: ${wonItem}! 🎉`;
-      // Inventarga obyekt sifatida qo'shish (status bilan)
       inventory.push({ name: wonItem, status: "Kutilmoqda" });
       saveData();
       spinBtn.disabled = false;
@@ -143,7 +141,7 @@ function spin() {
   }, 100);
 }
 
-// INVENTARNI OCHISH VA TELEGRAMGA ULASH
+// INVENTARNI OCHISH
 function openInventory() {
   const list = document.getElementById('inventoryList');
   if (inventory.length === 0) {
@@ -156,7 +154,7 @@ function openInventory() {
           <small style="color: #94a3b8;">Holati: ${itemObj.status}</small>
         </div>
         ${itemObj.status === 'Kutilmoqda' 
-          ? `<button onclick="claimItem(${index})" style="background: #38bdf8; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">Oshirish / Olish</button>` 
+          ? `<button onclick="claimItem(${index})" style="background: #38bdf8; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">Olish</button>` 
           : `<span style="color: #34d399; font-weight: 600;">Olingan ✓</span>`
         }
       </div>
@@ -165,15 +163,11 @@ function openInventory() {
   document.getElementById('inventoryModal').style.display = 'flex';
 }
 
-// Telegramga yuborish va statusni "Olingan" qilish
 function claimItem(index) {
   const item = inventory[index];
   const text = encodeURIComponent(`Salom! Men GameDrop saytidan "${item.name}" yutug'imni olishni xohlayman.\nMening ID: ${userId}`);
-  
-  // Telegramga yo'naltirish
   window.open(`https://t.me/Hack_Games_0712?text=${text}`, '_blank');
   
-  // Statusni olingan qilish
   inventory[index].status = "Olingan";
   saveData();
   openInventory();
@@ -183,14 +177,13 @@ function addCoins() {
   document.getElementById('topupModal').style.display = 'flex';
 }
 
-// XARID QILISH (TEKIN EMAS, TELEGRAMGA O'TADI)
 function buyPkg(coins, price) {
   const text = encodeURIComponent(`Salom! Men ${coins} G tanga (${price.toLocaleString()} so'm) sotib olmoqchiman.\nMening ID: ${userId}`);
   window.open(`https://t.me/Hack_Games_0712?text=${text}`, '_blank');
   closeModal('topupModal');
 }
 
-// --- ADMIN PANEL FUNKSIYALARI ---
+// ADMIN PANEL
 function openAdminLogin() {
   document.getElementById('adminLoginForm').style.display = 'block';
   document.getElementById('adminDashboard').style.display = 'none';
