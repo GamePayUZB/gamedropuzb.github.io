@@ -301,3 +301,48 @@ main {
   font-size: 0.85rem;
   color: #94a3b8;
 }
+/* ADMIN PANEL MAXSUS CSS */
+.btn-admin {
+  background: #dc2626;
+  color: #fff;
+  transition: 0.2s;
+}
+.btn-admin:hover {
+  background: #b91c1c;
+}
+
+.admin-modal-content {
+  border: 2px solid #dc2626 !important;
+  background: #182232 !important;
+}
+
+.admin-modal-content h2 {
+  color: #f87171;
+  margin-bottom: 15px;
+}
+
+.admin-section h3 {
+  font-size: 1.1rem;
+  color: #38bdf8;
+  margin-bottom: 5px;
+}
+
+/* Inventardagi holatlar dizayni */
+.inv-item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: #334155;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #475569;
+}
+
+.status-olingan {
+  background: #065f46 !important;
+  color: #34d399 !important;
+  border-color: #059669 !important;
+}
