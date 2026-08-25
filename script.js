@@ -1,177 +1,221 @@
-// LocalStorage ma'lumotlari
+// Foydalanuvchi ID sini yaratish yoki yuklab olish
+let userId = localStorage.getItem('userId');
+if (!userId) {
+  userId = Math.floor(100000 + Math.random() * 900000); // 6 xonali noyob ID
+  localStorage.setItem('userId', userId);
+}
+
 let userBalance = parseInt(localStorage.getItem('userBalance')) || 0;
+// Inventar obyektdan iborat bo'ladi: { name: "10 UC", status: "Kutilmoqda" yoki "Olingan" }
 let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-let userId = localStorage.getItem('userId') || "ID-" + Math.floor(100000 + Math.random() * 900000);
-localStorage.setItem('userId', userId);
+let selectedCase = null;
+let casesData = [];
 
-const MY_TELEGRAM = "Hack_Games_0712"; 
+// Ma'lumotlarni saqlash va ekranni yangilash
+function saveData() {
+  localStorage.setItem('userBalance', userBalance);
+  localStorage.setItem('inventory', JSON.stringify(inventory));
+  
+  document.getElementById('userBalance').innerText = userBalance;
+  document.getElementById('displayUserId').innerText = userId;
+  document.getElementById('invCount').innerText = inventory.length;
+}
 
-let casesData = [
-    { id: 1, title: "PUBG Bronze", price: 79, img: "pubg-bronze.jpg", items: ["10 UC", "30 UC", "60 UC", "15 UC", "5 UC", "25 UC"] },
-    { id: 2, title: "PUBG Silver", price: 149, img: "pubg-silver.jpg", items: ["60 UC", "120 UC", "180 UC", "15 UC"] },
-    { id: 3, title: "PUBG Gold", price: 649, img: "pubg-gold.jpg", items: ["325 UC", "660 UC", "1800 UC", "12 oy prime plus"] },
-    { id: 4, title: "Free Fire Mini", price: 79, img: "ff-mini.jpg", items: ["20 Diamond", "50 Diamond", "100 Diamond"] },
-    { id: 5, title: "Free Fire Max", price: 499, img: "ff-max.jpg", items: ["100 Diamond", "310 Diamond", "520 Diamond", "Booyah Pass"] }
-];
+const grid = document.getElementById('casesGrid');
+const track = document.getElementById('track');
 
-window.onload = function() {
-    initUI();
+// Sahifa ochilganda
+window.onload = async () => {
+  saveData();
+  try {
+    const response = await fetch('database.json');
+    const data = await response.json();
+    casesData = data.cases;
+    renderCases();
+  } catch (error) {
+    console.error("database.json yuklashda xatolik:", error);
+    grid.innerHTML = `<p style="color: #ef4444; grid-column: 1/-1; text-align: center;">Keyslarni yuklab bo'lmadi!</p>`;
+  }
 };
 
-function initUI() {
-    // ID chiqarish
-    const idDisplay = document.getElementById('userIdDisplay');
-    if (idDisplay) idDisplay.innerText = userId;
-
-    updateBalanceDisplay();
-    updateInventoryDisplay();
-    renderCases();
-
-    // + Tangalar tugmasi avtomatik ulanishi
-    const addCoinsBtn = document.getElementById('addCoinsBtn');
-    if (addCoinsBtn) {
-        addCoinsBtn.onclick = function() {
-            buyCoinsTelegram(100, "10,000");
-        };
-    }
-
-    // Admin panel tugmasi avtomatik ulanishi
-    const adminPanelBtn = document.getElementById('adminPanelBtn');
-    if (adminPanelBtn) {
-        adminPanelBtn.onclick = openAdminPanel;
-    }
-}
-
 function renderCases() {
-    const grid = document.getElementById('casesGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    
-    casesData.forEach(c => {
-        const card = document.createElement('div');
-        card.className = 'case-card';
-        card.innerHTML = `
-            <img src="${c.img}" alt="${c.title}" style="width:100%; border-radius:8px;">
-            <h3>${c.title}</h3>
-            <p>Narxi: <b>${c.price}</b> tanga</p>
-            <button onclick="openRoulette(${c.id})" style="padding:8px 16px; background:#22c55e; color:white; border:none; border-radius:6px; cursor:pointer;">Ochish</button>
-        `;
-        grid.appendChild(card);
-    });
+  grid.innerHTML = '';
+  casesData.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'case-card';
+    card.onclick = () => openRouletteModal(c);
+    card.innerHTML = `
+      <div class="case-img-box">
+        <img src="${c.img}" alt="${c.title}" class="case-img">
+      </div>
+      <div class="case-title">${c.title}</div>
+      <div class="case-price">${c.price} G</div>
+    `;
+    grid.appendChild(card);
+  });
 }
 
-function updateBalanceDisplay() {
-    const balanceEl = document.getElementById('balanceDisplay');
-    if (balanceEl) balanceEl.innerText = userBalance;
-    localStorage.setItem('userBalance', userBalance);
+function openRouletteModal(c) {
+  selectedCase = c;
+  document.getElementById('modalTitle').innerText = `${c.title} (${c.price} G)`;
+  document.getElementById('win-message').innerText = '';
+  document.getElementById('spinBtn').disabled = false;
+  document.getElementById('rouletteModal').style.display = 'flex';
+  initTrack();
 }
 
-function openRoulette(caseId) {
-    let selectedCase = casesData.find(c => c.id === caseId);
-    if (!selectedCase) return;
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+  if(id === 'rouletteModal') {
+    track.style.transition = 'none';
+    track.style.transform = 'translateX(0)';
+  }
+}
 
-    if (userBalance < selectedCase.price) {
-        alert("Balansingizda tanga yetarli emas! Tanga sotib olish uchun '+ Tangalar' tugmasini bosing.");
-        return;
+function initTrack() {
+  track.style.transition = 'none';
+  track.style.transform = 'translateX(0)';
+  track.innerHTML = '';
+  for (let i = 0; i < 60; i++) {
+    const item = selectedCase.items[Math.floor(Math.random() * selectedCase.items.length)];
+    const div = document.createElement('div');
+    div.className = 'item-card';
+    div.innerText = item;
+    track.appendChild(div);
+  }
+}
+
+function spin() {
+  if (userBalance < selectedCase.price) {
+    alert("Mablağ yetarli emas! Balansni to'ldiring.");
+    return;
+  }
+
+  userBalance -= selectedCase.price;
+  saveData();
+
+  const spinBtn = document.getElementById('spinBtn');
+  spinBtn.disabled = true;
+  document.getElementById('win-message').innerText = "Aylanmoqda...";
+
+  const wonItem = selectedCase.items[Math.floor(Math.random() * selectedCase.items.length)];
+  const targetIndex = 40;
+
+  track.style.transition = 'none';
+  track.style.transform = 'translateX(0)';
+  track.innerHTML = '';
+
+  for (let i = 0; i < 60; i++) {
+    const div = document.createElement('div');
+    div.className = 'item-card';
+    if (i === targetIndex) {
+      div.innerText = wonItem;
+    } else {
+      div.innerText = selectedCase.items[Math.floor(Math.random() * selectedCase.items.length)];
     }
+    track.appendChild(div);
+  }
 
-    userBalance -= selectedCase.price;
-    updateBalanceDisplay();
+  const wrapperWidth = document.querySelector('.roulette-wrapper').clientWidth;
+  const itemFullWidth = 110; 
+  const targetCenter = (targetIndex * itemFullWidth) + (itemFullWidth / 2);
+  const targetPosition = (wrapperWidth / 2) - targetCenter;
 
-    const modal = document.getElementById('rouletteModal');
-    if (modal) modal.style.display = 'flex';
+  setTimeout(() => {
+    track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
+    track.style.transform = `translateX(${targetPosition}px)`;
 
-    const track = document.getElementById('track');
-    if (track) {
-        track.innerHTML = '';
-        let itemsList = [];
-        for (let i = 0; i < 30; i++) {
-            let randomItem = selectedCase.items[Math.floor(Math.random() * selectedCase.items.length)];
-            itemsList.push(randomItem);
+    setTimeout(() => {
+      document.getElementById('win-message').innerText = `Siz yutdingiz: ${wonItem}! 🎉`;
+      // Inventarga obyekt sifatida qo'shish (status bilan)
+      inventory.push({ name: wonItem, status: "Kutilmoqda" });
+      saveData();
+      spinBtn.disabled = false;
+    }, 5000);
+  }, 100);
+}
+
+// INVENTARNI OCHISH VA TELEGRAMGA ULASH
+function openInventory() {
+  const list = document.getElementById('inventoryList');
+  if (inventory.length === 0) {
+    list.innerHTML = `<p style="color: #94a3b8; width: 100%;">Inventaringiz bo'sh.</p>`;
+  } else {
+    list.innerHTML = inventory.map((itemObj, index) => `
+      <div class="inv-item-card ${itemObj.status === 'Olingan' ? 'status-olingan' : ''}">
+        <div>
+          <b>${itemObj.name}</b><br>
+          <small style="color: #94a3b8;">Holati: ${itemObj.status}</small>
+        </div>
+        ${itemObj.status === 'Kutilmoqda' 
+          ? `<button onclick="claimItem(${index})" style="background: #38bdf8; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">Oshirish / Olish</button>` 
+          : `<span style="color: #34d399; font-weight: 600;">Olingan ✓</span>`
         }
+      </div>
+    `).join('');
+  }
+  document.getElementById('inventoryModal').style.display = 'flex';
+}
 
-        itemsList.forEach(item => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'roulette-item';
-            itemDiv.innerText = item;
-            itemDiv.style.cssText = "min-width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; background: #334155; color: white; font-weight: bold; border-radius: 8px; border: 2px solid #475569;";
-            track.appendChild(itemDiv);
-        });
+// Telegramga yuborish va statusni "Olingan" qilish
+function claimItem(index) {
+  const item = inventory[index];
+  const text = encodeURIComponent(`Salom! Men GameDrop saytidan "${item.name}" yutug'imni olishni xohlayman.\nMening ID: ${userId}`);
+  
+  // Telegramga yo'naltirish
+  window.open(`https://t.me/Hack_Games_0712?text=${text}`, '_blank');
+  
+  // Statusni olingan qilish
+  inventory[index].status = "Olingan";
+  saveData();
+  openInventory();
+}
 
-        track.style.transition = 'none';
-        track.style.transform = 'translateX(0px)';
+function addCoins() {
+  document.getElementById('topupModal').style.display = 'flex';
+}
 
-        setTimeout(() => {
-            track.style.transition = 'transform 4s cubic-bezier(0.15, 0.75, 0.25, 1)';
-            let randomOffset = Math.floor(Math.random() * 1500) + 1500;
-            track.style.transform = `translateX(-${randomOffset}px)`;
+// XARID QILISH (TEKIN EMAS, TELEGRAMGA O'TADI)
+function buyPkg(coins, price) {
+  const text = encodeURIComponent(`Salom! Men ${coins} G tanga (${price.toLocaleString()} so'm) sotib olmoqchiman.\nMening ID: ${userId}`);
+  window.open(`https://t.me/Hack_Games_0712?text=${text}`, '_blank');
+  closeModal('topupModal');
+}
 
-            setTimeout(() => {
-                let winningIndex = Math.floor((randomOffset + 100) / 120) % itemsList.length;
-                let wonItem = itemsList[winningIndex];
-                inventory.push({ caseTitle: selectedCase.title, prize: wonItem });
-                updateInventoryDisplay();
-            }, 4000);
-        }, 50);
+// --- ADMIN PANEL FUNKSIYALARI ---
+function openAdminLogin() {
+  document.getElementById('adminLoginForm').style.display = 'block';
+  document.getElementById('adminDashboard').style.display = 'none';
+  document.getElementById('adminPasswordInput').value = '';
+  document.getElementById('adminModal').style.display = 'flex';
+}
+
+function checkAdminPassword() {
+  const pass = document.getElementById('adminPasswordInput').value;
+  if (pass === 'admin0712') {
+    document.getElementById('adminLoginForm').style.display = 'none';
+    document.getElementById('adminDashboard').style.display = 'block';
+    document.getElementById('adminStatId').innerText = userId;
+    document.getElementById('adminStatBalance').innerText = userBalance;
+  } else {
+    alert("Parol noto'g'ri!");
+  }
+}
+
+function adminAddCoins() {
+  const tId = document.getElementById('targetUserId').value.trim();
+  const amount = parseInt(document.getElementById('addCoinAmount').value);
+
+  if (tId === userId.toString()) {
+    if (!isNaN(amount) && amount > 0) {
+      userBalance += amount;
+      saveData();
+      document.getElementById('adminStatBalance').innerText = userBalance;
+      alert(`Muvaffaqiyatli ${amount} G qo'shildi!`);
+    } else {
+      alert("Miqdorni to'g'ri kiriting!");
     }
-}
-
-function closeRoulette() {
-    const modal = document.getElementById('rouletteModal');
-    if (modal) modal.style.display = 'none';
-}
-
-function buyCoinsTelegram(coins, price) {
-    let text = `Salom! Men tanga sotib olmoqchiman.%0A- ID: ${userId}%0A- Miqdor: ${coins} ta tanga%0A- Narxi: ${price} so'm`;
-    window.open(`https://t.me/${MY_TELEGRAM}?text=${text}`, '_blank');
-}
-
-function updateInventoryDisplay() {
-    const invContainer = document.getElementById('inventoryList');
-    const invCount = document.getElementById('inventoryCount');
-    if (invCount) invCount.innerText = inventory.length;
-    localStorage.setItem('inventory', JSON.stringify(inventory));
-
-    if (invContainer) {
-        invContainer.innerHTML = '';
-        if (inventory.length === 0) {
-            invContainer.innerHTML = '<p style="color: #94a3b8; text-align: center;">Inventaringiz bo\'sh</p>';
-            return;
-        }
-        inventory.forEach((inv, index) => {
-            const div = document.createElement('div');
-            div.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 10px; margin-bottom: 5px; border-radius: 6px; color: white;";
-            div.innerHTML = `
-                <span>${index + 1}. ${inv.caseTitle} — <b>${inv.prize}</b></span>
-                <button onclick="claimPrize(${index})" style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Olish (Telegram)</button>
-            `;
-            invContainer.appendChild(div);
-        });
-    }
-}
-
-function claimPrize(index) {
-    let invItem = inventory[index];
-    let text = `Assalomu alaykum! Men yutug'imni olmoqchiman:%0A- ID: ${userId}%0A- Keys: ${invItem.caseTitle}%0A- Yutuq: ${invItem.prize}`;
-    window.open(`https://t.me/${MY_TELEGRAM}?text=${text}`, '_blank');
-
-    inventory.splice(index, 1);
-    updateInventoryDisplay();
-}
-
-function openAdminPanel() {
-    let password = prompt("Admin parolini kiriting:");
-    if (password === "admin0712") {
-        let targetId = prompt(`Foydalanuvchi ID raqamini kiriting (Masalan: ${userId}):`);
-        if (targetId) {
-            let addAmount = prompt("Qancha coin qo'shmoqchisiz?");
-            if (addAmount && !isNaN(addAmount)) {
-                userBalance += Number(addAmount);
-                updateBalanceDisplay();
-                alert(`Muvaffaqiyatli! Balansga ${addAmount} ta coin qo'shildi.`);
-            }
-        }
-    } else if (password !== null) {
-        alert("Parol noto'g'ri!");
-    }
+  } else {
+    alert("Bunday ID topilmadi yoki xato kiritildi!");
+  }
 }
